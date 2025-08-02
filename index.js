@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const http = require('http'); // Importa servidor HTTP
+const http = require('http');
 
 const registrarSlashCommands = require('./comandos/SlashCommands');
 
@@ -32,19 +32,20 @@ for (const file of systemFiles) {
 
 client.once('ready', async () => {
     console.log(`[BOT ONLINE] Logado como ${client.user.tag}`);
+
+    // Define o status do bot com emoji customizado e texto
+    client.user.setPresence({
+        activities: [{
+            name: '<:rjp_pf:1362258331770552380> Policia Federal | CMRP',
+            type: 0 // Jogando
+        }],
+        status: 'online'
+    });
+
     await registrarSlashCommands(client);
 });
 
-client.user.setPresence({
-    activities: [{
-        name: '<:rjp_pf:1362258331770552380> Policia Federal | CMRP',
-        type: 0 // Jogando
-    }],
-    status: 'online'
-});
-
-
-// SERVER HTTP para responder requisições de uptime
+// Servidor HTTP para manter o bot online no Render
 const PORT = process.env.PORT || 3000;
 
 http.createServer((req, res) => {
