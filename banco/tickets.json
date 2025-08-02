@@ -1,0 +1,58 @@
+{
+  "1401263183167229973": {
+    "channelId": "1401263183167229973",
+    "ownerId": "707959058228969485",
+    "type": "suporte-geral",
+    "reason": "Agua",
+    "createdAt": "2025-08-02T17:59:06.545Z",
+    "transcript": [
+      {
+        "author": "kaiquerlq",
+        "content": "<:azul:1389374322933764186>  TICKET - SUPORTE GERAL\n\n<a:lupa:1389604951746941159> **Motivo Informado:** Água\n\n<a:seta_gugu1:1398025125537775639> O atendimento foi iniciado. A Corregedoria Federal analisará seu pedido em breve.\n\n> Enquanto aguarda, fique atento às notificações no canal e utilize os botões abaixo caso precise interagir.",
+        "timestamp": 1754157731805
+      },
+      {
+        "author": "drkx7",
+        "content": "Fodase fodase",
+        "timestamp": 1754158131686
+      },
+      {
+        "author": "drkx7",
+        "content": "Fodase",
+        "timestamp": 1754158132711
+      },
+      {
+        "author": "drkx7",
+        "content": "Foda-se",
+        "timestamp": 1754158134941
+      },
+      {
+        "author": "drkx7",
+        "content": "Se foda Kaique",
+        "timestamp": 1754158137890
+      }
+    ]
+  },
+  "1401266751190077450": {
+    "channelId": "1401266751190077450",
+    "ownerId": "707959058228969485",
+    "type": "upamentos",
+    "reason": "oi",
+    "createdAt": "2025-08-02T18:13:17.218Z",
+    "transcript": []
+  },
+  "1401266958573375589": {
+    "channelId": "1401266958573375589",
+    "ownerId": "707959058228969485",
+    "type": "suporte-geral",
+    "reason": "A",
+    "createdAt": "2025-08-02T18:14:06.748Z",
+    "transcript": [
+      {
+        "author": "kaiquerlq",
+        "content": "Usuário",
+        "timestamp": 1754158505420
+      }
+    ]
+  }
+}

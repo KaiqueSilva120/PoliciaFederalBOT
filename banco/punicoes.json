@@ -1,0 +1,74 @@
+[
+  {
+    "id": "mdtvhosqeb5i9",
+    "memberId": "810877348420517928",
+    "memberName": "Perito Halfayed #177",
+    "punishmentType": "blacklist",
+    "roleId": "1401080034462273627",
+    "reason": "Sem Mira",
+    "punisherId": "707959058228969485",
+    "punishedAt": 1754116192970,
+    "expiresAt": null,
+    "logMessageId": "1401089731722346595"
+  },
+  {
+    "id": "mdtvuf5fhgi3a",
+    "memberId": "810877348420517928",
+    "memberName": "Perito Halfayed #177",
+    "punishmentType": "blacklist",
+    "roleId": "1401080034462273627",
+    "reason": "testando",
+    "punisherId": "707959058228969485",
+    "punishedAt": 1754116786995,
+    "expiresAt": null,
+    "logMessageId": "1401092223571066952"
+  },
+  {
+    "id": "mdtwkdgordd27",
+    "memberId": "719894494136238101",
+    "memberName": "Escrivão.Coelho #257",
+    "punishmentType": "exoneração",
+    "roleId": "1401079903625023498",
+    "reason": "o",
+    "punisherId": "707959058228969485",
+    "punishedAt": 1754117997864,
+    "expiresAt": null,
+    "logMessageId": "1401097302378156082"
+  },
+  {
+    "id": "mdtwq1zp4kmhb",
+    "memberId": "810877348420517928",
+    "memberName": "Perito Halfayed #177",
+    "punishmentType": "exoneração",
+    "roleId": "1401079903625023498",
+    "reason": "o",
+    "punisherId": "707959058228969485",
+    "punishedAt": 1754118262933,
+    "expiresAt": null,
+    "logMessageId": "1401098413956792413"
+  },
+  {
+    "id": "mdtxqyhy1zkw3",
+    "memberId": "432295377614536705",
+    "memberName": "Investigador Chefe Gustavo #135",
+    "punishmentType": "exoneração",
+    "roleId": "1401079903625023498",
+    "reason": "egua",
+    "punisherId": "707959058228969485",
+    "punishedAt": 1754119984678,
+    "expiresAt": null,
+    "logMessageId": "1401105635906682950"
+  },
+  {
+    "id": "mdtxruwonxo0d",
+    "memberId": "432295377614536705",
+    "memberName": "Investigador Chefe Gustavo #135",
+    "punishmentType": "blacklist",
+    "roleId": "1401080034462273627",
+    "reason": "oi",
+    "punisherId": "707959058228969485",
+    "punishedAt": 1754120026680,
+    "expiresAt": null,
+    "logMessageId": "1401105811958399076"
+  }
+]
