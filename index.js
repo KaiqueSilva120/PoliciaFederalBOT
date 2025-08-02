@@ -36,7 +36,7 @@ client.once('ready', async () => {
     // Define o status do bot com emoji customizado e texto
     client.user.setPresence({
         activities: [{
-            name: '<:rjp_pf:1362258331770552380> Policia Federal | CMRP',
+            name: 'Policia Federal | CMRP',
             type: 0 // Jogando
         }],
         status: 'online'
