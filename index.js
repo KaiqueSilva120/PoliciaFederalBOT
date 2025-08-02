@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const http = require('http'); // Importa servidor HTTP
 
 const registrarSlashCommands = require('./comandos/SlashCommands');
 
@@ -32,6 +33,16 @@ for (const file of systemFiles) {
 client.once('ready', async () => {
     console.log(`[BOT ONLINE] Logado como ${client.user.tag}`);
     await registrarSlashCommands(client);
+});
+
+// SERVER HTTP para responder requisições de uptime
+const PORT = process.env.PORT || 3000;
+
+http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Bot is alive!\n');
+}).listen(PORT, () => {
+    console.log(`Servidor HTTP rodando na porta ${PORT}`);
 });
 
 client.login(process.env.DISCORD_TOKEN);
