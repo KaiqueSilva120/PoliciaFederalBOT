@@ -1,4 +1,4 @@
-const { Client, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionsBitField, GatewayIntentBits } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionsBitField, GatewayIntentBits } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -7,6 +7,8 @@ const ACESSO_CHANNEL_ID = '1391248897862664324'; // Canal onde a mensagem fixa s
 const PRISOES_CHANNEL_ID = '1391248640168955945'; // Canal de Prisões da Cidade (mencionado na mensagem de sucesso)
 const ACESSO_ROLE_ID = '1391251666321281207';     // Cargo a ser concedido/removido
 const GUILD_ID = 'SEU_GUILD_ID';                 // ID do seu servidor (para thumbnail do bot)
+
+let clientInstance = null; // Para armazenar a instância do cliente globalmente neste módulo
 
 // --- Funções Auxiliares ---
 
@@ -43,6 +45,84 @@ async function sendAcessoMessage(channel, client) {
     await channel.send({ embeds: [embed], components: [actionRow] });
 }
 
+/**
+ * Lida com as interações de botão específicas do sistema de acesso.
+ * @param {Interaction} interaction - A interação a ser processada.
+ */
+async function handleAccessButtonInteraction(interaction) {
+    const { customId, member, guild } = interaction;
+
+    // Garante que o bot tenha Guild Members intent ativado e o cargo exista
+    // Re-checamos aqui caso o setup falhe ou o cargo seja deletado em runtime
+    if (!guild.roles.cache.has(ACESSO_ROLE_ID)) {
+        console.error(`[SISTEMA DE ACESSO] Cargo com ID ${ACESSO_ROLE_ID} não encontrado no servidor.`);
+        if (!interaction.replied && !interaction.deferred) {
+            return interaction.reply({ content: 'O cargo de acesso não foi configurado corretamente no servidor. Por favor, contate um administrador.', ephemeral: true });
+        }
+        return;
+    }
+
+    // Deferir a resposta para evitar "interação falhou"
+    if (!interaction.deferred) {
+        await interaction.deferReply({ ephemeral: true }); // Preferencialmente use { flags: 64 } para o padrão mais recente
+    }
+
+    switch (customId) {
+        case 'receber_acesso':
+            try {
+                // Verifica se o membro já tem o cargo
+                if (member.roles.cache.has(ACESSO_ROLE_ID)) {
+                    await interaction.editReply({
+                        content: '<:alerta:1398025586675122170> | Você já possui acesso às prisões da cidade!',
+                        ephemeral: true
+                    });
+                    return;
+                }
+
+                await member.roles.add(ACESSO_ROLE_ID);
+                await interaction.editReply({
+                    content: `<a:positivo:1397953846063398933> | Parabéns você recebeu acesso às prisões da cidade <#${PRISOES_CHANNEL_ID}> !`,
+                    ephemeral: true
+                });
+                console.log(`[SISTEMA DE ACESSO] ${member.user.tag} recebeu acesso.`);
+            } catch (error) {
+                console.error('[SISTEMA DE ACESSO] Erro ao dar cargo de acesso:', error);
+                await interaction.editReply({
+                    content: '<a:negativo:1397953861251104779> | Ocorreu um erro ao conceder seu acesso. Por favor, tente novamente.',
+                    ephemeral: true
+                });
+            }
+            break;
+
+        case 'remover_acesso':
+            try {
+                // Verifica se o membro não tem o cargo
+                if (!member.roles.cache.has(ACESSO_ROLE_ID)) {
+                    await interaction.editReply({
+                        content: '<:alerta:1398025586675122170> | Você não possui acesso às prisões da cidade para remover!',
+                        ephemeral: true
+                    });
+                    return;
+                }
+
+                await member.roles.remove(ACESSO_ROLE_ID);
+                await interaction.editReply({
+                    content: '<a:negativo:1397953861251104779> | Seu Acesso às prisões da cidade foi removido !',
+                    ephemeral: true
+                });
+                console.log(`[SISTEMA DE ACESSO] ${member.user.tag} removeu acesso.`);
+            } catch (error) {
+                console.error('[SISTEMA DE ACESSO] Erro ao remover cargo de acesso:', error);
+                await interaction.editReply({
+                    content: '<a:negativo:1397953861251104779> | Ocorreu um erro ao remover seu acesso. Por favor, tente novamente.',
+                    ephemeral: true
+                });
+            }
+            break;
+    }
+}
+
+
 // --- Módulo Principal do Sistema de Acesso ---
 
 /**
@@ -51,6 +131,8 @@ async function sendAcessoMessage(channel, client) {
  * @param {Client} client - A instância do cliente Discord.
  */
 function setup(client) {
+    clientInstance = client; // Salva a instância do cliente
+
     // Certifique-se de que o bot tem o intent de GuildMembers para gerenciar cargos
     if (!client.options.intents.has(GatewayIntentBits.GuildMembers)) {
         client.options.intents.add(GatewayIntentBits.GuildMembers);
@@ -62,8 +144,7 @@ function setup(client) {
         const channel = await client.channels.fetch(ACESSO_CHANNEL_ID).catch(() => null);
         if (!channel) return console.error('[SISTEMA DE ACESSO] Canal de acesso não encontrado. Verifique o ID.');
 
-        // --- INÍCIO DA VERIFICAÇÃO ADICIONADA ---
-        const messages = await channel.messages.fetch({ limit: 100 }).catch(() => null); // Aumentei o limite para 100 para ter mais chance de encontrar
+        const messages = await channel.messages.fetch({ limit: 100 }).catch(() => null);
         const fixedMessage = messages ? messages.find(msg =>
             msg.embeds.length > 0 && msg.embeds[0].title === '<a:lupa:1389604951746941159> Acesso Restrito - Prisões da Cidade'
         ) : null;
@@ -74,84 +155,29 @@ function setup(client) {
             console.log('[SISTEMA DE ACESSO] Mensagem fixa de acesso não encontrada. Enviando...');
             await sendAcessoMessage(channel, client);
         }
-        // --- FIM DA VERIFICAÇÃO ADICIONADA ---
-    });
-
-    // Evento de interação: Lida com os cliques nos botões
-    client.on('interactionCreate', async interaction => {
-        if (!interaction.isButton()) return;
-
-        const { customId, member, guild } = interaction;
-
-        // Garante que o bot tenha Guild Members intent ativado e o cargo exista
-        if (!guild.roles.cache.has(ACESSO_ROLE_ID)) {
-            console.error(`[SISTEMA DE ACESSO] Cargo com ID ${ACESSO_ROLE_ID} não encontrado no servidor.`);
-            if (!interaction.replied && !interaction.deferred) {
-                return interaction.reply({ content: 'O cargo de acesso não foi configurado corretamente no servidor. Por favor, contate um administrador.', ephemeral: true });
-            }
-            return;
-        }
-
-        // Deferir a resposta para evitar "interação falhou"
-        if (!interaction.deferred) {
-            await interaction.deferReply({ ephemeral: true });
-        }
-
-        switch (customId) {
-            case 'receber_acesso':
-                try {
-                    // Verifica se o membro já tem o cargo
-                    if (member.roles.cache.has(ACESSO_ROLE_ID)) {
-                        await interaction.editReply({
-                            content: '<:alerta:1398025586675122170> | Você já possui acesso às prisões da cidade!',
-                            ephemeral: true
-                        });
-                        return;
-                    }
-
-                    await member.roles.add(ACESSO_ROLE_ID);
-                    await interaction.editReply({
-                        content: `<a:positivo:1397953846063398933> | Parabéns você recebeu acesso às prisões da cidade <#${PRISOES_CHANNEL_ID}> !`,
-                        ephemeral: true
-                    });
-                    console.log(`[SISTEMA DE ACESSO] ${member.user.tag} recebeu acesso.`);
-                } catch (error) {
-                    console.error('[SISTEMA DE ACESSO] Erro ao dar cargo de acesso:', error);
-                    await interaction.editReply({
-                        content: '<a:negativo:1397953861251104779> | Ocorreu um erro ao conceder seu acesso. Por favor, tente novamente.',
-                        ephemeral: true
-                    });
-                }
-                break;
-
-            case 'remover_acesso':
-                try {
-                    // Verifica se o membro não tem o cargo
-                    if (!member.roles.cache.has(ACESSO_ROLE_ID)) {
-                        await interaction.editReply({
-                            content: '<:alerta:1398025586675122170> | Você não possui acesso às prisões da cidade para remover!',
-                            ephemeral: true
-                        });
-                        return;
-                    }
-
-                    await member.roles.remove(ACESSO_ROLE_ID);
-                    await interaction.editReply({
-                        content: '<a:negativo:1397953861251104779> | Seu Acesso às prisões da cidade foi removido !',
-                        ephemeral: true
-                    });
-                    console.log(`[SISTEMA DE ACESSO] ${member.user.tag} removeu acesso.`);
-                } catch (error) {
-                    console.error('[SISTEMA DE ACESSO] Erro ao remover cargo de acesso:', error);
-                    await interaction.editReply({
-                        content: '<a:negativo:1397953861251104779> | Ocorreu um erro ao remover seu acesso. Por favor, tente novamente.',
-                        ephemeral: true
-                    });
-                }
-                break;
-        }
     });
 }
 
-// Exporta a função setup para que o index.js possa chamá-la.
-module.exports = { setup };
+/**
+ * Função para lidar com interações passadas do arquivo principal.
+ * Este é o ponto de entrada para as interações que este módulo deve processar.
+ * @param {Interaction} interaction - A interação a ser verificada e processada.
+ * @returns {boolean} - Retorna true se a interação foi processada por este módulo, false caso contrário.
+ */
+async function handleInteraction(interaction) {
+    // Verifica se a interação é um botão e se o customId corresponde aos botões deste módulo
+    if (interaction.isButton() && (interaction.customId === 'receber_acesso' || interaction.customId === 'remover_acesso')) {
+        await handleAccessButtonInteraction(interaction);
+        return true; // Indica que esta interação foi tratada por este módulo
+    }
+    // Se houver outras interações (ex: modais) neste módulo, adicione aqui
+    // else if (interaction.isModalSubmit() && interaction.customId === 'algum_modal_do_acesso') {
+    //     await handleAccessModalSubmit(interaction);
+    //     return true;
+    // }
+
+    return false; // Indica que esta interação não pertence a este módulo
+}
+
+// Exporta as funções para serem usadas pelo index.js
+module.exports = { setup, handleInteraction };
