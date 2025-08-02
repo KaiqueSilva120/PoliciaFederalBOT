@@ -35,6 +35,15 @@ client.once('ready', async () => {
     await registrarSlashCommands(client);
 });
 
+client.user.setPresence({
+    activities: [{
+        name: '<:rjp_pf:1362258331770552380> Policia Federal | CMRP',
+        type: 0 // Jogando
+    }],
+    status: 'online'
+});
+
+
 // SERVER HTTP para responder requisições de uptime
 const PORT = process.env.PORT || 3000;
 
