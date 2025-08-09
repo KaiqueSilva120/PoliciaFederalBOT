@@ -4,7 +4,7 @@ const path = require('node:path');
 
 // --- Configurações Importantes ---
 const ACESSO_CHANNEL_ID = '1391248897862664324'; // Canal onde a mensagem fixa será enviada
-const PRISOES_CHANNEL_ID = '1391248640168955945'; // Canal de Prisões da Cidade (mencionado na mensagem de sucesso)
+const PRISOES_CHANNEL_ID = '1391248640168955945'; // Canal de Prisões da Cidade
 const ACESSO_ROLE_ID = '1391251666321281207';     // Cargo a ser concedido/removido
 const GUILD_ID = 'SEU_GUILD_ID';                 // ID do seu servidor (para thumbnail do bot)
 
@@ -53,7 +53,6 @@ async function handleAccessButtonInteraction(interaction) {
     const { customId, member, guild } = interaction;
 
     // Garante que o bot tenha Guild Members intent ativado e o cargo exista
-    // Re-checamos aqui caso o setup falhe ou o cargo seja deletado em runtime
     if (!guild.roles.cache.has(ACESSO_ROLE_ID)) {
         console.error(`[SISTEMA DE ACESSO] Cargo com ID ${ACESSO_ROLE_ID} não encontrado no servidor.`);
         if (!interaction.replied && !interaction.deferred) {
@@ -64,7 +63,7 @@ async function handleAccessButtonInteraction(interaction) {
 
     // Deferir a resposta para evitar "interação falhou"
     if (!interaction.deferred) {
-        await interaction.deferReply({ ephemeral: true }); // Preferencialmente use { flags: 64 } para o padrão mais recente
+        await interaction.deferReply({ ephemeral: true }); // Preferencialmente use { ephemeral: true }
     }
 
     switch (customId) {
@@ -170,11 +169,6 @@ async function handleInteraction(interaction) {
         await handleAccessButtonInteraction(interaction);
         return true; // Indica que esta interação foi tratada por este módulo
     }
-    // Se houver outras interações (ex: modais) neste módulo, adicione aqui
-    // else if (interaction.isModalSubmit() && interaction.customId === 'algum_modal_do_acesso') {
-    //     await handleAccessModalSubmit(interaction);
-    //     return true;
-    // }
 
     return false; // Indica que esta interação não pertence a este módulo
 }
