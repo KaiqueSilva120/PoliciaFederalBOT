@@ -2,7 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, Partials, Collection } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
-const http = require('http'); // Importa servidor HTTP
+const http = require('http');
 
 const registrarSlashCommands = require('./comandos/SlashCommands');
 
@@ -17,9 +17,8 @@ const client = new Client({
 });
 
 client.commands = new Collection();
-client.systems = new Collection(); // Adicionado para armazenar os módulos de sistema
+client.systems = new Collection();
 
-// Carrega todos os sistemas da pasta /sistemas
 const systemsPath = path.join(__dirname, 'sistemas');
 const systemFiles = fs.readdirSync(systemsPath).filter(file => file.endsWith('.js'));
 
@@ -28,19 +27,25 @@ for (const file of systemFiles) {
     if (typeof system.setup === 'function') {
         system.setup(client);
         console.log(`[SISTEMA] ${file} carregado.`);
-        // Armazena o módulo na coleção de sistemas
         client.systems.set(file.split('.')[0], system);
     }
 }
 
 client.once('ready', async () => {
     console.log(`[BOT ONLINE] Logado como ${client.user.tag}`);
+
+    client.user.setPresence({
+        activities: [{
+            name: 'Policia Federal | CMRP',
+            type: 0
+        }],
+        status: 'dnd'
+    });
+
     await registrarSlashCommands(client);
 });
 
-// --- NOVO: GERENCIADOR DE INTERAÇÕES ---
 client.on('interactionCreate', async interaction => {
-    // Primeiro, verifique os comandos slash (se houver)
     if (interaction.isCommand()) {
         const command = client.commands.get(interaction.commandName);
         if (!command) return;
@@ -52,13 +57,10 @@ client.on('interactionCreate', async interaction => {
         }
     }
     
-    // Em seguida, passe a interação para cada sistema carregado
-    // para verificar se ele pode tratá-la
     for (const [name, system] of client.systems) {
         if (typeof system.handleInteraction === 'function') {
             try {
                 const handled = await system.handleInteraction(interaction);
-                // Se a interação foi tratada, pare de verificar outros sistemas
                 if (handled) {
                     return;
                 }
@@ -70,7 +72,6 @@ client.on('interactionCreate', async interaction => {
 });
 
 
-// SERVER HTTP para responder requisições de uptime
 const PORT = process.env.PORT || 3000;
 
 http.createServer((req, res) => {
